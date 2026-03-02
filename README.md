@@ -1,4 +1,4 @@
-# Terraform module to connect an AWS EKS cluster to Zesty Kompass
+# Terraform module for AWS Management Account onboarding and EKS cluster integration with Zesty Kompass
 
 This module onboards an AWS Management (Master/Payer) account to Zesty and provisions all required resources for integration.
 It creates and configures the necessary components in the management account, including:
