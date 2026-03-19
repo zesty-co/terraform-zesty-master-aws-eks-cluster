@@ -86,19 +86,11 @@ resource "helm_release" "kompass" {
 - [Simple single-cluster example](./examples/simple/terragrunt/)
 - [Multi-cluster example](./examples/multi_clusters/terragrunt/)
 
-## Important Outputs
+## Kompass Helm Values Reference
 
-- `kompass_values_yaml` - rendered Helm values used to connect Kompass
+The module outputs a `kompass_values_yaml` string containing the credentials and
+metadata needed to connect your cluster to Zesty. It is passed directly to the
+`helm_release` resource via the `values` argument.
 
-## Testing
-
-- Run `make -C tests validate` to validate all Terraform examples without configuring remote backends
-- Run `make -C tests test-tf` to execute the mocked `terraform test` suites for the multi-cluster Kompass examples
-- Run `make -C tests validate-tg` to validate the Terragrunt HCL examples
-- Run `pre-commit run --all-files` to apply `terraform fmt`, `terraform validate`, and recursive `tflint`
-
-## Notes
-
-- By default, the module writes `values.yaml` locally. Set `create_values_local_file = false` if you prefer to consume `kompass_values_yaml` directly.
-- The S3 bucket name is derived from `cur_s3_bucket` and the current AWS account ID.
-- The default enabled product is Kompass.
+For the full list of configurable chart values, see the
+[Kompass `values.yaml`](https://github.com/zesty-co/kompass-insights/blob/main/charts/zesty/values.yaml).
