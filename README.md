@@ -1,45 +1,57 @@
-# Terraform module for AWS Management Account onboarding and EKS cluster integration with Zesty Kompass
+# Terraform module to onboard an AWS management account and connect EKS clusters to Zesty Kompass
 
-This module onboards an AWS Management (Master/Payer) account to Zesty and provisions all required resources for integration.
-It creates and configures the necessary components in the management account, including:
+This module onboards an AWS management account to Zesty and prepares the billing and access resources needed for Kompass.
 
-- AWS CUR
-- Amazon Athena database and table configuration
-- AWS Glue crawler for CUR data
+It creates:
 
-Once the management account setup is complete, you can connect your AWS EKS clusters to Zesty Kompass for cost visibility and optimization.  
+- IAM role and policy for Zesty access
+- S3 bucket and CUR configuration
+- Glue database, table, crawler, and crawler IAM role
+- Athena workgroup for CUR queries
+- Zesty account registration and Kompass values output
+
+After the account is onboarded, you can use the generated `kompass_values_yaml` to install the Kompass Helm chart into one or more EKS clusters.
+
 ## Prerequisites
 
-- [Terraform](https://developer.hashicorp.com/terraform/install) 1.3.0 +
+- [Terraform](https://developer.hashicorp.com/terraform/install) >= 1.3
+- AWS credentials for the target management account
+- Zesty API token for the `zesty` provider
+
+```terraform
+provider "zesty" {
+  token = "your-zesty-api-token"
+}
+```
 
 ## Providers
 
-- aws >= 6.0
-- random >= 3.7.2
-- local >= 2.5.3
+- `aws` ~> 6.0
+- `zesty` ~> 0.3.0
+- `random` ~> 3.7.2
+- `local` ~> 2.5.3
 
-## Optional Provider
+To deploy Kompass as part of the same Terraform root, also include:
 
-To connect a cluster (optional) as part of the installation, include:
+- `helm` ~> 3.0
 
-- helm >= 3
+## Examples
 
-## Example Usage
+### Terraform
 
-```terraform
+- [Simple single-cluster example](./examples/simple/terraform/)
+- [Multi-cluster example](./examples/multi_clusters/terraform/)
 
-module "zesty" {
-  source = "zesty-co/aws-eks-cluster/zesty"
-}
+### Terragrunt
 
-resource "helm_release" "kompass" {
-  name             = "kompass"
-  repository       = "https://zesty-co.github.io/kompass"
-  chart            = "kompass"
-  namespace        = "zesty-system"
-  cleanup_on_fail  = true
-  create_namespace = true
+- [Simple single-cluster example](./examples/simple/terragrunt/)
+- [Multi-cluster example](./examples/multi_clusters/terragrunt/)
 
-  values = [module.zesty.kompass_values_yaml]
-}
-```
+## Kompass Helm Values Reference
+
+The module outputs a `kompass_values_yaml` string containing the credentials and
+metadata needed to connect your cluster to Zesty. It is passed directly to the
+`helm_release` resource via the `values` argument.
+
+For the full list of configurable chart values, see the
+[Kompass `values.yaml`](https://github.com/zesty-co/kompass-insights/blob/main/charts/zesty/values.yaml).

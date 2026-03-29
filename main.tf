@@ -200,7 +200,7 @@ resource "aws_s3_bucket_policy" "cur_bucket_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid = "AllowCURv1Write"
+        Sid    = "AllowCURv1Write"
         Effect = "Allow"
         Principal = {
           Service = "billingreports.amazonaws.com"
@@ -217,7 +217,7 @@ resource "aws_s3_bucket_policy" "cur_bucket_policy" {
         ]
       },
       {
-        Sid = "AllowBCMDataExportsWrite"
+        Sid    = "AllowBCMDataExportsWrite"
         Effect = "Allow"
         Principal = {
           Service = [
@@ -245,9 +245,9 @@ resource "aws_iam_role" "glue_crawler_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { Service = "glue.amazonaws.com" }
-      Action = "sts:AssumeRole"
+      Action    = "sts:AssumeRole"
     }]
   })
 }
@@ -259,16 +259,16 @@ resource "aws_iam_policy" "glue_crawler_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = ["s3:GetObject", "s3:ListBucket"]
+        Effect = "Allow"
+        Action = ["s3:GetObject", "s3:ListBucket"]
         Resource = [
           aws_s3_bucket.zesty_cur_bucket.arn,
           "${aws_s3_bucket.zesty_cur_bucket.arn}/*"
         ]
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "glue:GetDatabase",
           "glue:GetDatabases",
           "glue:GetTable",
@@ -312,7 +312,7 @@ resource "aws_glue_crawler" "zesty_cur_crawler" {
 
   catalog_target {
     database_name = aws_glue_catalog_database.zesty_cur_db.name
-    tables = [aws_glue_catalog_table.cur.name]
+    tables        = [aws_glue_catalog_table.cur.name]
   }
 
   schedule = "cron(0 1 * * ? *)"
@@ -330,7 +330,7 @@ resource "aws_glue_crawler" "zesty_cur_crawler" {
 
 resource "aws_cur_report_definition" "zesty_cur" {
   report_name = var.cur_report_name
-  time_unit = "HOURLY"
+  time_unit   = "HOURLY"
   format      = "Parquet"
   compression = "Parquet"
 
@@ -392,7 +392,7 @@ resource "aws_glue_catalog_table" "cur" {
 }
 
 resource "aws_athena_workgroup" "zesty_athena" {
-  name = var.athena_workgroup
+  name          = var.athena_workgroup
   force_destroy = true
 
   configuration {
@@ -413,26 +413,26 @@ resource "null_resource" "wait_for_iam" {
 
 resource "zesty_account" "result" {
   account = {
-    id             = data.aws_caller_identity.current.account_id
-    region         = local.region
-    cloud_provider = "AWS"
-    role_arn       = aws_iam_role.zesty_iam_role.arn
-    external_id    = random_uuid.zesty_external_id.result
+    id                 = data.aws_caller_identity.current.account_id
+    region             = local.region
+    cloud_provider     = "AWS"
+    role_arn           = aws_iam_role.zesty_iam_role.arn
+    external_id        = random_uuid.zesty_external_id.result
     storage_class_name = var.storage_class_name
-    products       = var.products
+    products           = var.products
     cur = {
       s3_bucket       = aws_s3_bucket.zesty_cur_bucket.bucket
       cur_export_name = aws_cur_report_definition.zesty_cur.report_name
-      cur_type = "cur_v1"
+      cur_type        = "cur_v1"
     }
     athena = {
-      athena_db        = aws_glue_catalog_database.zesty_cur_db.name
-      athena_s3_bucket = aws_athena_workgroup.zesty_athena.configuration[0].result_configuration[0].output_location
+      athena_db         = aws_glue_catalog_database.zesty_cur_db.name
+      athena_s3_bucket  = aws_athena_workgroup.zesty_athena.configuration[0].result_configuration[0].output_location
       athena_project_id = data.aws_caller_identity.current.account_id
-      athena_region = local.region
-      athena_table = aws_glue_catalog_database.zesty_cur_db.name
-      athena_workgroup = aws_athena_workgroup.zesty_athena.name
-      athena_catalog = "AwsDataCatalog"
+      athena_region     = local.region
+      athena_table      = aws_glue_catalog_database.zesty_cur_db.name
+      athena_workgroup  = aws_athena_workgroup.zesty_athena.name
+      athena_catalog    = "AwsDataCatalog"
 
     }
   }

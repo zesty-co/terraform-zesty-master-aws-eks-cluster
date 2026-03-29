@@ -11,3 +11,4 @@ dist/
 *.tfstate*
 *.lock.hcl
 
+.terragrunt-cache/

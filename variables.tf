@@ -75,8 +75,8 @@ variable "values_yaml_filename" {
 
 variable "glue_crawler_name" {
   description = "The zesty crawler name"
-  type = string
-  default = "zesty_cur_glue_crawler"
+  type        = string
+  default     = "zesty_cur_glue_crawler"
 }
 
 variable "storage_class_name" {
