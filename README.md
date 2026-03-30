@@ -39,13 +39,13 @@ To deploy Kompass as part of the same Terraform root, also include:
 
 ### Terraform
 
-- [Simple single-cluster example](./examples/simple/terraform/)
-- [Multi-cluster example](./examples/multi_clusters/terraform/)
+- [Simple single-cluster example](./examples/simple-terraform/)
+- [Multi-cluster example](./examples/multi-clusters-terraform/)
 
 ### Terragrunt
 
-- [Simple single-cluster example](./examples/simple/terragrunt/)
-- [Multi-cluster example](./examples/multi_clusters/terragrunt/)
+- [Simple single-cluster example](./examples/simple-terragrunt/)
+- [Multi-cluster example](./examples/multi-clusters-terragrunt/)
 
 ## Kompass Helm Values Reference
 

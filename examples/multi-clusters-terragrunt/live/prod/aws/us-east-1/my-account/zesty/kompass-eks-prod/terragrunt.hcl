@@ -18,7 +18,7 @@ locals {
 }
 
 terraform {
-  source = "${get_repo_root()}/examples/multi_clusters/terragrunt/modules/kompass"
+  source = "${get_repo_root()}/examples/multi-clusters-terragrunt/modules/kompass"
 }
 
 generate "helm_provider" {

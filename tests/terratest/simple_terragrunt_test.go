@@ -13,7 +13,7 @@ import (
 func TestSimpleTerragruntAccount(t *testing.T) {
 	t.Parallel()
 
-	exampleDir := "../../examples/simple/terragrunt/live/prod/aws/us-east-1/my-account/zesty/account"
+	exampleDir := "../../examples/simple-terragrunt/live/prod/aws/us-east-1/my-account/zesty/account"
 	tmpDir, err := files.CopyTerraformFolderToTemp(exampleDir, t.Name())
 	require.NoError(t, err)
 
@@ -35,7 +35,7 @@ func TestSimpleTerragruntFullE2E(t *testing.T) {
 	clusterName := os.Getenv("CLUSTER_NAME")
 	require.NotEmpty(t, clusterName, "CLUSTER_NAME environment variable must be set")
 
-	accountDir := "../../examples/simple/terragrunt/live/prod/aws/us-east-1/my-account/zesty/account"
+	accountDir := "../../examples/simple-terragrunt/live/prod/aws/us-east-1/my-account/zesty/account"
 	accountTmpDir, err := files.CopyTerraformFolderToTemp(accountDir, t.Name()+"-account")
 	require.NoError(t, err)
 
@@ -51,7 +51,7 @@ func TestSimpleTerragruntFullE2E(t *testing.T) {
 	kompassValues := terraform.Output(t, accountOpts, "kompass_values_yaml")
 	assert.NotEmpty(t, kompassValues, "account layer should output kompass_values_yaml")
 
-	kompassDir := "../../examples/simple/terragrunt/live/prod/aws/us-east-1/my-account/zesty/kompass"
+	kompassDir := "../../examples/simple-terragrunt/live/prod/aws/us-east-1/my-account/zesty/kompass"
 	kompassTmpDir, err := files.CopyTerraformFolderToTemp(kompassDir, t.Name()+"-kompass")
 	require.NoError(t, err)
 

@@ -13,7 +13,7 @@ import (
 func TestMultiClusterAccountExample(t *testing.T) {
 	t.Parallel()
 
-	exampleDir := "../../examples/multi_clusters/terraform/account"
+	exampleDir := "../../examples/multi-clusters-terraform/account"
 	tmpDir, err := files.CopyTerraformFolderToTemp(exampleDir, t.Name())
 	require.NoError(t, err)
 
@@ -36,7 +36,7 @@ func TestMultiClusterKompassExample(t *testing.T) {
 	clusterName := os.Getenv("CLUSTER_NAME")
 	require.NotEmpty(t, clusterName, "CLUSTER_NAME environment variable must be set")
 
-	exampleDir := "../../examples/multi_clusters/terraform/kompass-eks-prod"
+	exampleDir := "../../examples/multi-clusters-terraform/kompass-eks-prod"
 	tmpDir, err := files.CopyTerraformFolderToTemp(exampleDir, t.Name())
 	require.NoError(t, err)
 
@@ -54,7 +54,7 @@ func TestMultiClusterFullE2E(t *testing.T) {
 	clusterName := os.Getenv("CLUSTER_NAME")
 	require.NotEmpty(t, clusterName, "CLUSTER_NAME environment variable must be set")
 
-	accountDir := "../../examples/multi_clusters/terraform/account"
+	accountDir := "../../examples/multi-clusters-terraform/account"
 	accountTmpDir, err := files.CopyTerraformFolderToTemp(accountDir, t.Name()+"-account")
 	require.NoError(t, err)
 
@@ -69,7 +69,7 @@ func TestMultiClusterFullE2E(t *testing.T) {
 	kompassValues := terraform.Output(t, accountOpts, "kompass_values_yaml")
 	assert.NotEmpty(t, kompassValues, "account layer should output kompass_values_yaml")
 
-	kompassDir := "../../examples/multi_clusters/terraform/kompass-eks-prod"
+	kompassDir := "../../examples/multi-clusters-terraform/kompass-eks-prod"
 	kompassTmpDir, err := files.CopyTerraformFolderToTemp(kompassDir, t.Name()+"-kompass")
 	require.NoError(t, err)
 

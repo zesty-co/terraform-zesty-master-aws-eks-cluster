@@ -13,7 +13,7 @@ import (
 func TestMultiClusterTerragruntAccount(t *testing.T) {
 	t.Parallel()
 
-	exampleDir := "../../examples/multi_clusters/terragrunt/live/prod/aws/us-east-1/my-account/zesty/account"
+	exampleDir := "../../examples/multi-clusters-terragrunt/live/prod/aws/us-east-1/my-account/zesty/account"
 	tmpDir, err := files.CopyTerraformFolderToTemp(exampleDir, t.Name())
 	require.NoError(t, err)
 
@@ -34,7 +34,7 @@ func TestMultiClusterTerragruntAccount(t *testing.T) {
 func TestMultiClusterTerragruntRunAll(t *testing.T) {
 	_ = os.Getenv("ZESTY_API_TOKEN")
 
-	exampleDir := "../../examples/multi_clusters/terragrunt/live/prod/aws/us-east-1/my-account/zesty"
+	exampleDir := "../../examples/multi-clusters-terragrunt/live/prod/aws/us-east-1/my-account/zesty"
 	tmpDir, err := files.CopyTerraformFolderToTemp(exampleDir, t.Name())
 	require.NoError(t, err)
 

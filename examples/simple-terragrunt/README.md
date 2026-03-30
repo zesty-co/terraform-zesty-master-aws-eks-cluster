@@ -5,7 +5,7 @@ This example onboards an AWS management account to Zesty and deploys the Kompass
 ## Directory Structure
 
 ```text
-simple/terragrunt/
+simple-terragrunt/
 ├── modules/kompass/                            # reusable Helm module
 │   ├── main.tf
 │   ├── variables.tf

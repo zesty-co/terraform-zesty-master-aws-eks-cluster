@@ -8,7 +8,7 @@ terraform {
 }
 
 module "zesty" {
-  source = "../../../../"
+  source = "../../../"
 
   create_values_local_file = false
 }

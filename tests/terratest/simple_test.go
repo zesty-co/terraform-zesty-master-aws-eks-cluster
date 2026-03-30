@@ -16,7 +16,7 @@ func TestSimpleExample(t *testing.T) {
 	clusterName := os.Getenv("CLUSTER_NAME")
 	require.NotEmpty(t, clusterName, "CLUSTER_NAME environment variable must be set")
 
-	exampleDir := "../../examples/simple/terraform"
+	exampleDir := "../../examples/simple-terraform"
 	tmpDir, err := files.CopyTerraformFolderToTemp(exampleDir, t.Name())
 	require.NoError(t, err)
 
@@ -42,7 +42,7 @@ func TestSimpleExamplePlanOnly(t *testing.T) {
 	clusterName := os.Getenv("CLUSTER_NAME")
 	require.NotEmpty(t, clusterName, "CLUSTER_NAME environment variable must be set")
 
-	exampleDir := "../../examples/simple/terraform"
+	exampleDir := "../../examples/simple-terraform"
 	tmpDir, err := files.CopyTerraformFolderToTemp(exampleDir, t.Name())
 	require.NoError(t, err)
 
