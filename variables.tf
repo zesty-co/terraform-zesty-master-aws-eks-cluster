@@ -89,3 +89,9 @@ variable "create_values_local_file" {
   type        = bool
   default     = true
 }
+
+variable "iam_propagation_delay" {
+  description = "Duration to wait after IAM role policy changes before calling Zesty validation."
+  type        = string
+  default     = "20s"
+}

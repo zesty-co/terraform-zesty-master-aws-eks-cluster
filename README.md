@@ -30,10 +30,30 @@ provider "zesty" {
 - `zesty` ~> 0.3.0
 - `random` ~> 3.7.2
 - `local` ~> 2.5.3
+- `time` ~> 0.12
 
 To deploy Kompass as part of the same Terraform root, also include:
 
 - `helm` ~> 3.0
+
+## Adding Commitment Manager
+
+Customers already using this module for Kompass should add CM by updating the existing module configuration, not by creating a second management-account module for the same AWS account:
+
+```hcl
+products = [
+  {
+    name   = "Kompass"
+    active = true
+  },
+  {
+    name   = "CM"
+    active = true
+  }
+]
+```
+
+That keeps one Zesty IAM role, one `zesty_account` registration, and the existing Kompass CUR/Athena resources in the same Terraform state.
 
 ## Examples
 
