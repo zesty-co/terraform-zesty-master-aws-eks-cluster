@@ -5,11 +5,14 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 locals {
-  region = var.region != "" ? var.region : data.aws_region.current.region
-  values_content = [
+  region     = var.region != "" ? var.region : data.aws_region.current.region
+  cm_enabled = anytrue([for product in var.products : product.name == "CM" && product.active])
+
+  kompass_values = [
     for p in zesty_account.result.account.products : p.values
     if p.name == "Kompass" && p.active == true
-  ][0]
+  ]
+  values_content = try(local.kompass_values[0], null)
 }
 
 resource "aws_iam_role" "zesty_iam_role" {
@@ -41,7 +44,7 @@ resource "aws_iam_role_policy" "zesty_policy" {
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
+    Statement = concat([
       {
         Sid    = "EC2Access"
         Effect = "Allow"
@@ -87,8 +90,7 @@ resource "aws_iam_role_policy" "zesty_policy" {
         Effect = "Allow"
         Action = [
           "savingsplans:List*",
-          "savingsplans:Describe*",
-          "savingsplans:CreateSavingsPlan"
+          "savingsplans:Describe*"
         ]
         Resource = ["*"]
       },
@@ -176,7 +178,38 @@ resource "aws_iam_role_policy" "zesty_policy" {
           "${aws_s3_bucket.zesty_cur_bucket.arn}/*"
         ]
       }
-    ]
+      ], local.cm_enabled ? [
+      {
+        Sid    = "EC2AccessCM"
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateReservedInstancesListing",
+          "ec2:PurchaseReservedInstancesOffering",
+          "ec2:PurchaseHostReservation",
+          "ec2:GetReservedInstancesExchangeQuote",
+          "ec2:AcceptReservedInstancesExchangeQuote",
+          "ec2:CancelReservedInstancesListing",
+          "ec2:ModifyReservedInstances"
+        ]
+        Resource = ["*"]
+      },
+      {
+        Sid    = "ServiceQuotasAccessCM"
+        Effect = "Allow"
+        Action = [
+          "servicequotas:RequestServiceQuotaIncrease"
+        ]
+        Resource = ["*"]
+      },
+      {
+        Sid    = "SavingsPlansAccessCM"
+        Effect = "Allow"
+        Action = [
+          "savingsplans:*"
+        ]
+        Resource = ["*"]
+      }
+    ] : [])
   })
 }
 
@@ -440,8 +473,8 @@ resource "zesty_account" "result" {
 }
 
 resource "local_file" "kompass_values" {
-  count      = var.create_values_local_file ? 1 : 0
-  content    = local.values_content
+  count      = var.create_values_local_file && local.values_content != null ? 1 : 0
+  content    = coalesce(local.values_content, "")
   filename   = var.values_yaml_filename
   depends_on = [zesty_account.result]
 }
