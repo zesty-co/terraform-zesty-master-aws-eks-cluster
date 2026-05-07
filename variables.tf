@@ -23,12 +23,26 @@ variable "max_session_duration" {
 }
 
 variable "products" {
-  description = "List of all products to enable"
+  description = "Advanced override for the Zesty product list. Prefer kompass_enabled and cm_access_mode for normal use."
   type        = list(map(any))
-  default = [{
-    name   = "Kompass"
-    active = true
-  }]
+  default     = null
+}
+
+variable "kompass_enabled" {
+  description = "Whether to create Kompass-specific Athena/Glue resources and activate Kompass in the Zesty account payload."
+  type        = bool
+  default     = true
+}
+
+variable "cm_access_mode" {
+  description = "Commitment Manager access mode. Use disabled, readonly, or full."
+  type        = string
+  default     = "disabled"
+
+  validation {
+    condition     = contains(["disabled", "readonly", "full"], var.cm_access_mode)
+    error_message = "cm_access_mode must be one of: disabled, readonly, full."
+  }
 }
 
 variable "trusted_principal" {
@@ -88,4 +102,10 @@ variable "create_values_local_file" {
   description = "Enables the creation of a local values.yaml file"
   type        = bool
   default     = true
+}
+
+variable "iam_propagation_delay" {
+  description = "Duration to wait after IAM role policy changes before calling Zesty validation."
+  type        = string
+  default     = "20s"
 }

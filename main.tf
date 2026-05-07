@@ -6,10 +6,6 @@ data "aws_region" "current" {}
 
 locals {
   region = var.region != "" ? var.region : data.aws_region.current.region
-  values_content = [
-    for p in zesty_account.result.account.products : p.values
-    if p.name == "Kompass" && p.active == true
-  ][0]
 }
 
 resource "aws_iam_role" "zesty_iam_role" {
@@ -40,143 +36,8 @@ resource "aws_iam_role_policy" "zesty_policy" {
   role = aws_iam_role.zesty_iam_role.id
 
   policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "EC2Access"
-        Effect = "Allow"
-        Action = [
-          "ec2:List*",
-          "ec2:Describe*",
-          "elasticloadbalancing:Describe*",
-          "autoscaling:Describe*"
-        ]
-        Resource = ["*"]
-      },
-      {
-        Sid    = "OrganizationsAccess"
-        Effect = "Allow"
-        Action = [
-          "organizations:List*",
-          "organizations:Describe*"
-        ]
-        Resource = ["*"]
-      },
-      {
-        Sid    = "ServiceQuotasAccess"
-        Effect = "Allow"
-        Action = [
-          "servicequotas:ListServiceQuotas",
-          "servicequotas:GetServiceQuota",
-          "servicequotas:GetRequestedServiceQuotaChange"
-        ]
-        Resource = ["*"]
-      },
-      {
-        Sid    = "MetricsAccess"
-        Effect = "Allow"
-        Action = [
-          "cloudwatch:List*",
-          "cloudwatch:Describe*",
-          "cloudwatch:GetMetricStatistics"
-        ]
-        Resource = ["*"]
-      },
-      {
-        Sid    = "SavingsPlansAccess"
-        Effect = "Allow"
-        Action = [
-          "savingsplans:List*",
-          "savingsplans:Describe*",
-          "savingsplans:CreateSavingsPlan"
-        ]
-        Resource = ["*"]
-      },
-      {
-        Sid    = "CostExplorerAccess"
-        Effect = "Allow"
-        Action = [
-          "ce:List*",
-          "ce:Describe*",
-          "ce:Get*"
-        ]
-        Resource = ["*"]
-      },
-      {
-        Sid    = "EKSAccess"
-        Effect = "Allow"
-        Action = [
-          "eks:List*",
-          "eks:Describe*"
-        ]
-        Resource = ["*"]
-      },
-      {
-        Sid    = "AthenaAccess"
-        Effect = "Allow"
-        Action = [
-          "athena:StartQueryExecution",
-          "athena:GetQueryExecution",
-          "athena:GetQueryResults"
-        ]
-        Resource = ["*"]
-      },
-      {
-        Sid    = "ReadAccessToAthenaCurDataViaGlue"
-        Effect = "Allow"
-        Action = [
-          "glue:GetDatabase*",
-          "glue:GetTable*",
-          "glue:GetPartition*",
-          "glue:GetUserDefinedFunction",
-          "glue:BatchGetPartition"
-        ]
-        Resource = [
-          "arn:aws:glue:*:*:catalog",
-          "arn:aws:glue:*:*:database/${var.glue_db_name}*",
-          "arn:aws:glue:*:*:table/${var.glue_db_name}*/*"
-        ]
-      },
-      {
-        Sid    = "AllowPricingListPriceLists"
-        Effect = "Allow"
-        Action = [
-          "pricing:ListPriceLists"
-        ]
-        Resource = ["*"]
-      },
-      {
-        Sid    = "BCMDataExportsAccess"
-        Effect = "Allow"
-        Action = [
-          "bcm-data-exports:ListExports",
-          "bcm-data-exports:GetExport"
-        ]
-        Resource = ["*"]
-      },
-      {
-        Sid    = "CostAndUsageReportAccess"
-        Effect = "Allow"
-        Action = [
-          "cur:DescribeReportDefinitions"
-        ]
-        Resource = ["*"]
-      },
-      {
-        Sid    = "S3AccessToCurBucket"
-        Effect = "Allow"
-        Action = [
-          "s3:ListBucket",
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:GetBucketLocation"
-        ]
-        Resource = [
-          aws_s3_bucket.zesty_cur_bucket.arn,
-          "${aws_s3_bucket.zesty_cur_bucket.arn}/*"
-        ]
-      }
-    ]
+    Version   = "2012-10-17"
+    Statement = local.zesty_policy_statements
   })
 }
 
@@ -240,6 +101,8 @@ resource "aws_s3_bucket_policy" "cur_bucket_policy" {
 }
 
 resource "aws_iam_role" "glue_crawler_role" {
+  count = var.kompass_enabled ? 1 : 0
+
   name = var.glue_crawler_name
 
   assume_role_policy = jsonencode({
@@ -253,6 +116,8 @@ resource "aws_iam_role" "glue_crawler_role" {
 }
 
 resource "aws_iam_policy" "glue_crawler_policy" {
+  count = var.kompass_enabled ? 1 : 0
+
   name = var.glue_crawler_name
 
   policy = jsonencode({
@@ -300,19 +165,23 @@ resource "aws_iam_policy" "glue_crawler_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "attach_glue_policy" {
-  role       = aws_iam_role.glue_crawler_role.name
-  policy_arn = aws_iam_policy.glue_crawler_policy.arn
+  count = var.kompass_enabled ? 1 : 0
+
+  role       = aws_iam_role.glue_crawler_role[0].name
+  policy_arn = aws_iam_policy.glue_crawler_policy[0].arn
 }
 
 resource "aws_glue_crawler" "zesty_cur_crawler" {
+  count = var.kompass_enabled ? 1 : 0
+
   name          = var.glue_crawler_name
-  role          = aws_iam_role.glue_crawler_role.arn
-  database_name = aws_glue_catalog_database.zesty_cur_db.name
+  role          = aws_iam_role.glue_crawler_role[0].arn
+  database_name = aws_glue_catalog_database.zesty_cur_db[0].name
   description   = "Crawler to auto-generate Zesty CUR table schema"
 
   catalog_target {
-    database_name = aws_glue_catalog_database.zesty_cur_db.name
-    tables        = [aws_glue_catalog_table.cur.name]
+    database_name = aws_glue_catalog_database.zesty_cur_db[0].name
+    tables        = [aws_glue_catalog_table.cur[0].name]
   }
 
   schedule = "cron(0 1 * * ? *)"
@@ -342,20 +211,22 @@ resource "aws_cur_report_definition" "zesty_cur" {
     "SPLIT_COST_ALLOCATION_DATA"
   ]
 
-  additional_artifacts = [
-    "ATHENA"
-  ]
+  additional_artifacts = var.kompass_enabled ? ["ATHENA"] : []
 
   report_versioning = "OVERWRITE_REPORT"
 }
 
 resource "aws_glue_catalog_database" "zesty_cur_db" {
+  count = var.kompass_enabled ? 1 : 0
+
   name = var.glue_db_name
 }
 
 resource "aws_glue_catalog_table" "cur" {
+  count = var.kompass_enabled ? 1 : 0
+
   name          = var.glue_db_name
-  database_name = aws_glue_catalog_database.zesty_cur_db.name
+  database_name = aws_glue_catalog_database.zesty_cur_db[0].name
   table_type    = "EXTERNAL_TABLE"
 
   parameters = {
@@ -392,6 +263,8 @@ resource "aws_glue_catalog_table" "cur" {
 }
 
 resource "aws_athena_workgroup" "zesty_athena" {
+  count = var.kompass_enabled ? 1 : 0
+
   name          = var.athena_workgroup
   force_destroy = true
 
@@ -404,44 +277,26 @@ resource "aws_athena_workgroup" "zesty_athena" {
   }
 }
 
-resource "null_resource" "wait_for_iam" {
-  provisioner "local-exec" {
-    command = "sleep 10"
+resource "time_sleep" "wait_for_iam" {
+  create_duration = var.iam_propagation_delay
+
+  triggers = {
+    role_policy   = aws_iam_role.zesty_iam_role.assume_role_policy
+    inline_policy = aws_iam_role_policy.zesty_policy.policy
   }
+
   depends_on = [aws_iam_role_policy.zesty_policy]
 }
 
 resource "zesty_account" "result" {
-  account = {
-    id                 = data.aws_caller_identity.current.account_id
-    region             = local.region
-    cloud_provider     = "AWS"
-    role_arn           = aws_iam_role.zesty_iam_role.arn
-    external_id        = random_uuid.zesty_external_id.result
-    storage_class_name = var.storage_class_name
-    products           = var.products
-    cur = {
-      s3_bucket       = aws_s3_bucket.zesty_cur_bucket.bucket
-      cur_export_name = aws_cur_report_definition.zesty_cur.report_name
-      cur_type        = "cur_v1"
-    }
-    athena = {
-      athena_db         = aws_glue_catalog_database.zesty_cur_db.name
-      athena_s3_bucket  = aws_athena_workgroup.zesty_athena.configuration[0].result_configuration[0].output_location
-      athena_project_id = data.aws_caller_identity.current.account_id
-      athena_region     = local.region
-      athena_table      = aws_glue_catalog_database.zesty_cur_db.name
-      athena_workgroup  = aws_athena_workgroup.zesty_athena.name
-      athena_catalog    = "AwsDataCatalog"
+  account = local.zesty_account_payload
 
-    }
-  }
-  depends_on = [aws_iam_role_policy.zesty_policy, null_resource.wait_for_iam]
+  depends_on = [aws_iam_role_policy.zesty_policy, time_sleep.wait_for_iam]
 }
 
 resource "local_file" "kompass_values" {
-  count      = var.create_values_local_file ? 1 : 0
-  content    = local.values_content
+  count      = var.kompass_enabled && var.create_values_local_file ? 1 : 0
+  content    = coalesce(local.values_content, "")
   filename   = var.values_yaml_filename
   depends_on = [zesty_account.result]
 }

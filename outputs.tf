@@ -1,4 +1,4 @@
 output "kompass_values_yaml" {
   value       = local.values_content
-  description = "The contents of the values.yaml file used to onboard Kompass"
+  description = "The contents of the values.yaml file used to onboard Kompass. Null when Kompass is disabled."
 }
