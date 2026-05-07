@@ -87,6 +87,10 @@ and `zesty_account.result`. Kompass-specific resources now have Terraform
 `moved` blocks so existing state can move to the new conditional addresses
 without manual `terraform state mv`.
 
+The legacy IAM wait helper is also replaced with a `time_sleep` resource, so the
+first upgrade plan may remove the old `null_resource.wait_for_iam`, create
+`time_sleep.wait_for_iam`, and re-run Zesty account validation.
+
 ### Add CM to an existing Kompass account
 
 Add CM by changing only `cm_access_mode` on the same module block.
@@ -139,6 +143,9 @@ cm_access_mode  = "readonly"
 Terraform creates the Kompass Athena/Glue resources and updates the existing IAM
 policy and `zesty_account.result` in place.
 
+This also enables the CUR `ATHENA` artifact on the report definition. Validate
+this transition in staging before using it for production onboarding.
+
 ## State ownership
 
 Use only one instance of this module per AWS management account. Do not install
@@ -149,6 +156,13 @@ policy, CUR, and Zesty account registration.
 The `products` variable remains available as an advanced compatibility override.
 Prefer `kompass_enabled` and `cm_access_mode` for normal use, because they keep
 IAM permissions and the Zesty account payload in sync.
+
+Permission notes:
+
+- Kompass mode keeps the existing module's Savings Plans and CUR bucket
+  permissions for backward compatibility.
+- CM readonly uses read-only Savings Plans and CUR bucket access.
+- CM full adds CM automation permissions, including Savings Plans write access.
 
 ## Examples
 

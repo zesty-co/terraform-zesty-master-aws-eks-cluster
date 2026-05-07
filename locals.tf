@@ -65,6 +65,9 @@ locals {
       ]
       Resource = ["*"]
     },
+    # Kompass keeps CreateSavingsPlan for compatibility with the existing
+    # published module. CM full receives Savings Plans write access through
+    # cm_full_policy_statements; CM readonly intentionally stays read-only.
     {
       Sid    = "SavingsPlansAccess"
       Effect = "Allow"
@@ -154,6 +157,8 @@ locals {
       ]
       Resource = ["*"]
     },
+    # Kompass keeps the legacy CUR bucket permissions. CM-only mode omits
+    # PutObject because readonly CM should only read the generated CUR data.
     {
       Sid    = "S3AccessToCurBucket"
       Effect = "Allow"
